@@ -19,7 +19,6 @@ dependencies: bin pkg
 	go get gopkg.in/qml.v1
 
 gobuild: 
-	go build all
 	go build -o hw6 main
 
 run:
@@ -27,6 +26,9 @@ run:
 
 clean:
 	@rm -f ./hw6
+	@rm -rf pkg/
+	@rm -rf src/gopkg.in
+	@rm -rf src/github.com
 
 done:
 	@echo "BUILD COMPLETE!"
