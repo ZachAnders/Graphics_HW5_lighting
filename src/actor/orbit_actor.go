@@ -2,6 +2,7 @@ package actor
 
 import (
 	//	"github.com/go-gl/gl"
+	"github.com/ianremmler/ode"
 	"glutil"
 	"world"
 )
@@ -18,8 +19,8 @@ type OrbitActor struct {
 }
 
 func NewOrbitActor(myworld *world.World, child world.Actor, center glutil.Point3D, radius float64) OrbitActor {
-	box := world.NewBoundingBox(center, glutil.Point3D{0, 0, 0})
-	basic := NewBasicActor(myworld, box)
+	box := myworld.Space.NewBox(ode.V3(0, 0, 0))
+	basic := NewBasicActor(myworld, &box)
 	return OrbitActor{basic, child, center, radius, 0, 1, true, glutil.Point3D{0, 1, 0}}
 }
 
@@ -39,8 +40,7 @@ func (self *OrbitActor) Tick() {
 			self.radius * glutil.Sin(self.angle)}
 	}
 
-	center := self.child.GetCenter()
-	*center = new_point
+	self.child.SetPosition(new_point)
 	//*self.child.GetCenter() = new_point
 	self.center = new_point
 	if self.moving {

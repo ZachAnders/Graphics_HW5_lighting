@@ -1,6 +1,8 @@
 export GOPATH=$(PWD)
 
-all: clean find dependencies gobuild done
+#	go get gopkg.in/qml.v1
+
+all: light_clean find dependencies gobuild done
 
 find:
 	@which go > /dev/null || if [ $$? -ne 0 ]; then echo "Can't find go! Please 'sudo apt-get install golang'"; exit 1; fi
@@ -14,21 +16,24 @@ pkg:
 dependencies: bin pkg
 	go get github.com/go-gl/gl
 	go get github.com/go-gl/glu
+	go get github.com/go-gl/glh
 	go get github.com/rhencke/glut
 	go get github.com/ianremmler/ode
-	go get gopkg.in/qml.v1
 
 gobuild: 
-	go build -o hw6 main
+	go build -o hw7 main
 
 run:
-	@./hw6
+	@./hw7
 
 clean:
-	@rm -f ./hw6
+	@rm -f ./hw7
 	@rm -rf pkg/
 	@rm -rf src/gopkg.in
 	@rm -rf src/github.com
+
+light_clean:
+	@rm -f pkg/*/*.a
 
 done:
 	@echo "BUILD COMPLETE!"

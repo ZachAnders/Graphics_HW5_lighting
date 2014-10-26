@@ -3,6 +3,7 @@ package glutil
 import (
 	"fmt"
 	"github.com/go-gl/gl"
+	"github.com/ianremmler/ode"
 )
 
 type Point3D struct {
@@ -11,12 +12,20 @@ type Point3D struct {
 	Z float64
 }
 
+func NewODEPoint3D(vals ode.Vector3) Point3D {
+	return Point3D{vals[0], vals[1], vals[2]}
+}
+
 func (pnt *Point3D) Unpack() (float64, float64, float64) {
 	return pnt.X, pnt.Y, pnt.Z
 }
 
 func (self *Point3D) ToString() string {
 	return fmt.Sprintf("(%f, %f, %f)", self.X, self.Y, self.Z)
+}
+
+func (self *Point3D) ToODE() ode.Vector3 {
+	return ode.V3(self.X, self.Y, self.Z)
 }
 
 func (self *Point3D) Average(other Point3D) Point3D {

@@ -3,7 +3,9 @@ package entity
 import (
 	//	"fmt"
 	"github.com/go-gl/gl"
+	"github.com/go-gl/glh"
 	"glutil"
+	"os"
 	"world"
 )
 
@@ -17,11 +19,17 @@ type XYPlane struct {
 	yHeight  float64
 	myColor  glutil.Color4D
 	offset   float32
+	Texture  *glh.Texture
 }
 
 func NewXYPlane(upLeft, lowRight glutil.Point3D, yHeight float64) XYPlane {
 	box := world.NewBoundingBox(upLeft.Average(lowRight), upLeft.Minus(lowRight))
-	return XYPlane{box, upLeft, lowRight, yHeight, glutil.Color4D{0, 0, 0, 0}, 0}
+
+	dirtTex := glh.NewTexture(512, 512)
+	file, _ := os.Open("dirt.png")
+	dirtTex.FromPngReader(file, 0)
+
+	return XYPlane{box, upLeft, lowRight, yHeight, glutil.Color4D{0, 0, 0, 0}, 0, dirtTex}
 }
 
 func (self *XYPlane) Render() {
@@ -35,13 +43,13 @@ func (self *XYPlane) Render() {
 	x1, _, z1 := self.upLeft.Unpack()
 	x2, _, z2 := self.lowRight.Unpack()
 
-	//	white := []float32{1, 1, 0.0, .1}
-	//	black := []float32{0, 0, 0, 1}
-	//	shinyvec := []float32{0}
-	//	gl.Materialfv(gl.FRONT_AND_BACK, gl.SHININESS, shinyvec)
-	//	gl.Materialfv(gl.FRONT_AND_BACK, gl.SPECULAR, white)
-	//	gl.Materialfv(gl.FRONT_AND_BACK, gl.EMISSION, black)
-
+	if self.Texture != nil {
+		gl.Color4f(.7, .7, .7, 1)
+		self.Texture.Enter()
+		gl.TexEnvi(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	}
 	for i := 0; i < dim; i++ {
 		gl.Begin(gl.QUAD_STRIP)
 
@@ -52,11 +60,18 @@ func (self *XYPlane) Render() {
 			gl.Normal3f(0.0, 1.0, 0.0)
 			z_offset := float64(j) / float64(dim)
 			z_offset = z1 + (z2-z1)*z_offset
+			x2_offset := x_offset + (1/float64(dim))*(x2-x1)
 
+			gl.TexCoord2d(x_offset/10, z_offset/10)
 			gl.Vertex3d(x_offset, self.yHeight, z_offset)
-			gl.Vertex3d(x_offset+(1/float64(dim))*(x2-x1), self.yHeight, z_offset)
+			gl.TexCoord2d(x2_offset/10, z_offset/10)
+			gl.Vertex3d(x2_offset, self.yHeight, z_offset)
 		}
 		gl.End()
+	}
+	if self.Texture != nil {
+		self.Texture.Exit()
+		gl.Disable(gl.TEXTURE_2D)
 	}
 	//	gl.Begin(gl.QUADS)
 	//
@@ -163,6 +178,10 @@ func SimpleCylinder(bot_center glutil.Point3D, radius, height float64, bot_col, 
 	x, y, z := bot_center.Unpack()
 	gl.PushMatrix()
 
+	gl.TexEnvi(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+
 	gl.Translated(x, y, z)
 	gl.Scaled(radius, height, radius)
 
@@ -171,10 +190,12 @@ func SimpleCylinder(bot_center glutil.Point3D, radius, height float64, bot_col, 
 	for theta := int32(0); theta <= 360; theta += 5 {
 		pnt := glutil.CreatePointFromPolar(theta, 0)
 
-		bot_col.Set()
 		gl.Normal3d(pnt.X, 0, pnt.Z)
+		bot_col.Set()
+		gl.TexCoord2d(float64(theta)/180, 0)
 		gl.Vertex3d(pnt.X, 0, pnt.Z)
 		top_col.Set()
+		gl.TexCoord2d(float64(theta)/180, height/8)
 		gl.Vertex3d(pnt.X, 1, pnt.Z)
 	}
 	gl.End()
@@ -246,6 +267,10 @@ func SimpleCone(bot_center glutil.Point3D, radius, height float64, bot_col, top_
 	x, y, z := bot_center.Unpack()
 	gl.PushMatrix()
 
+	gl.TexEnvi(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+
 	gl.Translated(x, y, z)
 	gl.Scaled(radius, height, radius)
 
@@ -254,10 +279,12 @@ func SimpleCone(bot_center glutil.Point3D, radius, height float64, bot_col, top_
 	for theta := int32(0); theta <= 360; theta += 5 {
 		pnt := glutil.CreatePointFromPolar(theta, 0)
 
-		bot_col.Set()
 		gl.Normal3d(pnt.X, .5, pnt.Z)
+		bot_col.Set()
+		gl.TexCoord2d(float64(theta)/90, height/4)
 		gl.Vertex3d(pnt.X, 0, pnt.Z)
 		top_col.Set()
+		gl.TexCoord2d(float64(theta)/90, 0)
 		gl.Vertex3d(0, 1, 0)
 	}
 	gl.End()

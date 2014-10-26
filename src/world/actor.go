@@ -1,9 +1,12 @@
 package world
 
-import ()
+import (
+	"glutil"
+)
 
 type Actor interface {
-	Entity
+	GetPosition() glutil.Point3D
+	SetPosition(glutil.Point3D)
 	Translate(dx, dy, dz float64)
 	CanObstruct() bool
 	CanFall() bool

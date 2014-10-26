@@ -3,6 +3,7 @@ package actor
 import (
 	"entity"
 	"github.com/go-gl/gl"
+	"github.com/ianremmler/ode"
 	"glutil"
 	"world"
 )
@@ -12,13 +13,15 @@ type BallLight struct {
 }
 
 func NewBallLight(myWorld *world.World, position glutil.Point3D) BallLight {
-	box := world.NewBoundingBox(position, glutil.Point3D{0, 0, 0})
-	actor := NewBasicActor(myWorld, box)
+	box := myWorld.Space.NewBox(ode.V3(0, 0, 0))
+	box.SetPosition(position.ToODE())
+	actor := NewBasicActor(myWorld, &box)
 	return BallLight{actor}
 }
 
 func (self *BallLight) Render() {
-	x, y, z := self.Position.Center.Unpack()
+	pos := self.Model.Position()
+	x, y, z := pos[0], pos[1], pos[2]
 	ambient := []float32{0.25, 0.25, 0.25, 1.0}
 	diffuse := []float32{.55, .55, .55, 1.0}
 	specular := []float32{0.00, 0.00, 0.00, 1.0}
@@ -42,7 +45,9 @@ func (self *BallLight) Render() {
 	gl.Lightfv(gl.LIGHT0, gl.SPECULAR, specular)
 	gl.Lightfv(gl.LIGHT0, gl.POSITION, position)
 
-	entity.SimplePrism(self.Position.Center, self.Position.Center.Add(glutil.Point3D{2, 2, 2}), 0)
+	c1 := glutil.NewODEPoint3D(pos)
+	c2 := c1.Add(glutil.Point3D{2, 2, 2})
+	entity.SimplePrism(c1, c2, 0)
 
 	gl.PopMatrix()
 }

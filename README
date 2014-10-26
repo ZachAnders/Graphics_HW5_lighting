@@ -1,4 +1,4 @@
-Assignment 5: Lighting
+Assignment 7: Textues
 
 Name: Zach Anders
 
@@ -6,19 +6,21 @@ Dependencies:
 	golang
 	git
 	libglew-dev (Required by Go-GL)
+	libode1
+	libode-dev
 
 Build Instructions:
 	1. Make sure you have the dependencies installed:
-			$ sudo apt-get install golang git libglew-dev
+			$ sudo apt-get install golang git libglew-dev libode1 libode-dev
 
 	2. Now you should be able to build the application:
 			$ make
 	3. If it was successful, you should see "BUILD COMPLETE" at the end of your output
-	4. You should see a './hw5' binary in your current directory. You can
+	4. You should see a './hw7' binary in your current directory. You can
 		either run it directly or with 'make run'
 
 Running Instructions:
-	1. Build and run ./hw5
+	1. Build and run ./hw7
 	2. Controls:
 			W : Move Forward
 			S : Move Backward
@@ -27,9 +29,11 @@ Running Instructions:
 			L : Toggle automatic rotating light
 			Q : Move Light left
 			E : Move light right
+			R : Reset player location
+			B : Spawn new crate/box
 
 			Arrow keys : Rotate camera manually
 			Escape : Exit the program
 
 Time Spent:
-	6 Hours
+	7 Hours

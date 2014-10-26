@@ -1,23 +1,24 @@
 package actor
 
 import (
+	"github.com/ianremmler/ode"
+	"glutil"
 	"world"
 )
 
 type BasicActor struct {
-	world.Entity
-	World    *world.World
-	Position world.BoundingBox
-	id       int
+	Model *ode.Box
+	World *world.World
+	id    int
 }
 
-func NewBasicActor(world *world.World, pos world.BoundingBox) BasicActor {
-	newPos := pos
-	return BasicActor{&newPos, world, pos, 0}
+func NewBasicActor(world *world.World, model *ode.Box) BasicActor {
+	return BasicActor{model, world, 0}
 }
 
 func (self *BasicActor) Translate(dx, dy, dz float64) {
-	self.World.TranslateActor(self, dx, dy, dz)
+	pos := self.Model.Position()
+	self.Model.SetPosition(ode.V3(dx+pos[0], dy+pos[1], dz+pos[2]))
 }
 
 func (self *BasicActor) CanObstruct() bool {
@@ -43,5 +44,12 @@ func (self *BasicActor) SetID(id int) {
 }
 
 func (self *BasicActor) Tick() {
+}
 
+func (self *BasicActor) GetPosition() glutil.Point3D {
+	return glutil.NewODEPoint3D(self.Model.Position())
+}
+
+func (self *BasicActor) SetPosition(newVal glutil.Point3D) {
+	self.Model.SetPosition(newVal.ToODE())
 }
