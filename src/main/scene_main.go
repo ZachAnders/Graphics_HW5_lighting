@@ -95,9 +95,6 @@ func KeyDownFunc(ch byte, x int, y int) {
 	case 'e':
 		light.AdjustAngle(5)
 		break
-	case 'l':
-		light.Toggle()
-		break
 	case ' ':
 		player.Translate(0, 10, 0)
 		break
@@ -204,7 +201,8 @@ func setup() {
 	file.Close()
 
 	lightsource := actor.NewBallLight(&my_world, glutil.Point3D{15, 15, 15})
-	light = actor.NewOrbitActor(&my_world, &lightsource, glutil.Point3D{0, 15, 0}, 50)
+	light = actor.NewOrbitActor(&my_world, &lightsource, glutil.Point3D{0, 0, 0}, 450)
+	light.SetAxis(glutil.Point3D{1, 0, 0})
 	my_world.AddActor(&light)
 
 	actor.NewPlane(&my_world, glutil.Point3D{0, 0, 0})

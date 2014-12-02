@@ -6,17 +6,24 @@ Dependencies:
 	golang
 	git
 	libglew-dev (Required by Go-GL)
-	libode1
-	libode-dev
+    freeglut3-dev
+    libode (see below)
+    qt5-default
+    qtdeclarative5-dev
 
 Build Instructions:
 	1. Make sure you have the dependencies installed:
-			$ sudo apt-get install golang git libglew-dev libode1 libode-dev
+			$ sudo apt-get install golang git libglew-dev freeglut3-dev qt5-default qtdeclarative5-dev
+
+       Note: Unfortunately the verion of the Open-Dynamics-Engine that is in
+            Ubuntu's repositories by default is too old. When you run my makefile,
+            it will attempt to grab, configure and build ODE from source. This may
+            take a few minutes the first time it happens.
 
 	2. Now you should be able to build the application:
 			$ make
 	3. If it was successful, you should see "BUILD COMPLETE" at the end of your output
-	4. You should see a './hw7' binary in your current directory. You can
+	4. You should see a './project' binary in your current directory. You can
 		either run it directly or with 'make run'
 
 Running Instructions:
@@ -26,14 +33,17 @@ Running Instructions:
 			S : Move Backward
 			A : Strafe Left
 			D : Strafe Right
-			L : Toggle automatic rotating light
 			Q : Move Light left
 			E : Move light right
 			R : Reset player location
 			B : Spawn new crate/box
+            G : Grab / Throw crate
 
 			Arrow keys : Rotate camera manually
 			Escape : Exit the program
 
-Time Spent:
-	7 Hours
+What Remains:
+
+ - Unfortunately I have not yet integrated an OBJ loader. I started writing one (unfortunately there do not appear to be any already written in Go), but it is not quite done yet. This is the primary reason I do not have any interesting objects yet. I am already working on some Blender designs, so those should be simple to integrate into the final project. They will probably be some additional objects you can interact with.
+ - Terrain. This is behind the obj loader, but the generic flat terrain I have is starting to get bothersome. I was planning to to load a triangle mesh for terrain, but I may just have to revert to a heightfield.
+ - Refine controls. Walking/movement and grabbing is a bit awkward right now. It would be nice to refine those.
