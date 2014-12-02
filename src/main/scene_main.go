@@ -62,8 +62,8 @@ func DisplayFunc() {
 	gl.Disable(gl.DEPTH_TEST)
 	gl.Disable(gl.LIGHTING)
 	gl.Color3f(.9, .9, .9)
-	glutil.Print2d(5, 35, "Keys: W,S,A,D : Move Around, Space : Jump | Q / E : Move Light left/right | B : Spawn new crates | R : Reset location")
-	glutil.Print2d(5, 20, "Click and Drag: Rotate | Arrow keys: Rotate | G : Grab / throw crate")
+	glutil.Print2d(5, 35, "Keys: W,S,A,D : Move Around, Space : Jump | Q / E : Move Light/Sun Up/Down | L : Pause light")
+	glutil.Print2d(5, 20, "Click and Drag: Rotate | Arrow keys: Rotate | B : Spawn New Creates | R : Reset Location | G : Grab / throw crate")
 	glutil.Print2d(5, 5, "%s", player.ToString())
 	glutil.Print2d(cursor[0], cursor[1], "+")
 
@@ -88,6 +88,9 @@ func KeyDownFunc(ch byte, x int, y int) {
 		break
 	case 'a':
 		player.Translate(0.0, 0.0, 2.5)
+		break
+	case 'l':
+		light.Toggle()
 		break
 	case 'q':
 		light.AdjustAngle(-5)
