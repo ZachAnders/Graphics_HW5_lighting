@@ -9,14 +9,14 @@ import (
 )
 
 type BallLight struct {
-	BasicActor
+	*BasicActor
 }
 
 func NewBallLight(myWorld *world.World, position glutil.Point3D) BallLight {
 	box := myWorld.Space.NewBox(ode.V3(0, 0, 0))
 	box.SetPosition(position.ToODE())
 	actor := NewBasicActor(myWorld, &box)
-	return BallLight{actor}
+	return BallLight{&actor}
 }
 
 func (self *BallLight) Render() {

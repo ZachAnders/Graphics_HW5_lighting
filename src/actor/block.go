@@ -1,6 +1,7 @@
 package actor
 
 import (
+	"fmt"
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glh"
 	"github.com/ianremmler/ode"
@@ -9,7 +10,7 @@ import (
 )
 
 type Block struct {
-	BasicActor
+	*BasicActor
 	color    glutil.Color4D
 	Offset   int
 	Texture  *glh.Texture
@@ -35,13 +36,14 @@ func NewBlock(myworld *world.World, position, size glutil.Point3D, color glutil.
 	box.SetPosition(position.ToODE())
 
 	actor := NewBasicActor(myworld, &box)
-	return Block{actor, color, 0, nil, 1}
+	block := Block{&actor, color, 0, nil, 1}
+	box.SetData(&block)
+	return block
 }
 
 func (self *Block) Render() {
-	center_pnt, size_pnt := self.Model.Position(), self.Model.Lengths()
-	//	bot := center_pnt.Minus(*size_pnt)
-	//	size := size_pnt.Add(*size_pnt)
+	box := self.Model.(*ode.Box)
+	center_pnt, size_pnt := box.Position(), box.Lengths()
 
 	x1, y1, z1 := center_pnt[0], center_pnt[1], center_pnt[2]
 	dx, dy, dz := size_pnt[0], size_pnt[1], size_pnt[2]
@@ -154,4 +156,8 @@ func (self *Block) Render() {
 		gl.Disable(gl.TEXTURE_2D)
 	}
 	gl.PopMatrix()
+}
+
+func (self *Block) ToString() string {
+	return fmt.Sprintf("Block Actor %d", self.GetID())
 }

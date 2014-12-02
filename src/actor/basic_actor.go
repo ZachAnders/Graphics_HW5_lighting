@@ -1,18 +1,19 @@
 package actor
 
 import (
+	"fmt"
 	"github.com/ianremmler/ode"
 	"glutil"
 	"world"
 )
 
 type BasicActor struct {
-	Model *ode.Box
+	Model ode.Geom
 	World *world.World
 	id    int
 }
 
-func NewBasicActor(world *world.World, model *ode.Box) BasicActor {
+func NewBasicActor(world *world.World, model ode.Geom) BasicActor {
 	return BasicActor{model, world, 0}
 }
 
@@ -36,6 +37,11 @@ func (self *BasicActor) CanClip() bool {
 	return false
 }
 
+func (self *BasicActor) CanCache() bool {
+	// By default, you cannot cache actor renderings
+	return false
+}
+
 func (self *BasicActor) GetID() int {
 	return self.id
 }
@@ -46,10 +52,21 @@ func (self *BasicActor) SetID(id int) {
 func (self *BasicActor) Tick() {
 }
 
+func (self *BasicActor) Render() {
+}
+
 func (self *BasicActor) GetPosition() glutil.Point3D {
 	return glutil.NewODEPoint3D(self.Model.Position())
 }
 
 func (self *BasicActor) SetPosition(newVal glutil.Point3D) {
 	self.Model.SetPosition(newVal.ToODE())
+}
+
+func (self *BasicActor) ToString() string {
+	return fmt.Sprintf("Basic Actor %d", self.id)
+}
+
+func (self *BasicActor) Interact(my_geom, other_geom ode.Geom) bool {
+	return true
 }

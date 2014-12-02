@@ -1,11 +1,11 @@
 package main
 
 /*
-* CSCI 4229 Assignment 5: Lighting
+* CSCI 4229 Final Project
 *
 * Author: Zach Anders
 *
-* Some code derived from CSCI 4229 Examples 9, 10, and 13 (ex9.c, ex10.c, ex13.c)
+* Some code derived from CSCI 4229 Examples
 *
 * Code for 2D text display (due to missing windowpos2i) based off some example code
 * at http://programmingexamples.net/wiki/OpenGL/Text
@@ -33,6 +33,7 @@ import (
 var (
 	light    actor.OrbitActor
 	crateTex *glh.Texture
+	skybox   *entity.Skybox
 )
 
 var renderQueue util.RenderQueue = util.NewEmptyRenderQueue()
@@ -41,6 +42,7 @@ var renderQueue util.RenderQueue = util.NewEmptyRenderQueue()
 var my_world = world.NewWorld()
 var player = actor.NewPlayer(&my_world, glutil.Point3D{0, 5, 0}, 5)
 var currentMouse = glutil.CreateMouseState()
+var cursor = []int{0, 0}
 
 // Normal order:
 //Translate -> Rotate -> Scale
@@ -52,16 +54,18 @@ func DisplayFunc() {
 	gl.LoadIdentity()
 
 	player.PositionSelf()
+	skybox.Position = player.GetPosition()
 
-	my_world.Tick()
 	renderQueue.RenderAll()
+	my_world.Tick()
 
 	gl.Disable(gl.DEPTH_TEST)
 	gl.Disable(gl.LIGHTING)
 	gl.Color3f(.9, .9, .9)
-	glutil.Print2d(5, 35, "Keys: W,S,A,D : Move Around, Space : Jump | Q / E : Move Light left/right | B : Spawn new crate | R : Reset location")
-	glutil.Print2d(5, 20, "Click and Drag: Rotate | Arrow keys: Rotate")
+	glutil.Print2d(5, 35, "Keys: W,S,A,D : Move Around, Space : Jump | Q / E : Move Light left/right | B : Spawn new crates | R : Reset location")
+	glutil.Print2d(5, 20, "Click and Drag: Rotate | Arrow keys: Rotate | G : Grab / throw crate")
 	glutil.Print2d(5, 5, "%s", player.ToString())
+	glutil.Print2d(cursor[0], cursor[1], "+")
 
 	gl.Flush()
 	glut.SwapBuffers()
@@ -97,12 +101,14 @@ func KeyDownFunc(ch byte, x int, y int) {
 	case ' ':
 		player.Translate(0, 10, 0)
 		break
+	case 'g':
+		player.GrabThrow()
+		break
 	case 'b':
-		testblock := actor.NewBlock(&my_world, glutil.Point3D{10, 15, 0}, glutil.Point3D{3, 3, 3}, glutil.Color4D{.5, .5, .5, 1}, true)
-		testblock.Texture = crateTex
-		testblock.TexScale = 3
-		my_world.AddActor(&testblock)
-		renderQueue.Add(&testblock)
+		x := (rand.Float64() * 200) - (100)
+		y := (rand.Float64() * 20) - (10) + 25
+		z := (rand.Float64() * 200) - (100)
+		boxSpawn(x, y, z)
 		break
 	case 'r':
 		player.SetPosition(glutil.Point3D{-20, 5, 10})
@@ -150,6 +156,7 @@ func MouseDown(button, state, x, y int) {
 		break
 	case glut.RIGHT_BUTTON:
 		currentMouse.RightDown = (state == glut.DOWN)
+		player.GrabThrow()
 		break
 	}
 }
@@ -164,6 +171,8 @@ func Reshape(width int, height int) {
 		asp = float64(width) / float64(height)
 	}
 
+	cursor[0], cursor[1] = width/2, height/2
+
 	//  Set the viewport to the entire window
 	gl.Viewport(0, 0, width, height)
 
@@ -176,9 +185,16 @@ func IdleFunc() {
 	s_time := glut.Get(glut.ELAPSED_TIME)
 	glut.PostRedisplay()
 	e_time := glut.Get(glut.ELAPSED_TIME) - s_time
-	if e_time < 33 {
-		time.Sleep(time.Duration(33-e_time) * time.Millisecond)
+	if e_time < 16 {
+		time.Sleep(time.Duration(16-e_time) * time.Millisecond)
 	}
+}
+
+func boxSpawn(x, y, z float64) {
+	testblock := actor.NewBlock(&my_world, glutil.Point3D{x, y, z}, glutil.Point3D{3, 3, 3}, glutil.Color4D{.5, .5, .5, 1}, true)
+	testblock.Texture = crateTex
+	testblock.TexScale = 3
+	my_world.AddActor(&testblock)
 }
 
 func setup() {
@@ -187,64 +203,20 @@ func setup() {
 	crateTex.FromPngReader(file, 0)
 	file.Close()
 
-	//	test_box = space.NewBox(ode.V3(4, 4, 4))
-
-	//mass := ode.NewMass()
-	//mass.SetBox(1, ode.V3(4, 4, 4))
-	//mass.Adjust(1)
-	//body := test_world.NewBody()
-	//body.SetMass(mass)
-	//test_box.SetBody(body)
-
-	//test_world.SetGravity(ode.V3(0, -9.8, 0))
-	//space.NewPlane(ode.V4(0, 1, 0, 0))
-	////a.SetPosition(ode.V3(0, 1, 0))
-	//test_box.SetPosition(ode.V3(0, 15, 0))
-
 	lightsource := actor.NewBallLight(&my_world, glutil.Point3D{15, 15, 15})
-	renderQueue.AddNamed(&lightsource, "light")
 	light = actor.NewOrbitActor(&my_world, &lightsource, glutil.Point3D{0, 15, 0}, 50)
 	my_world.AddActor(&light)
 
+	actor.NewPlane(&my_world, glutil.Point3D{0, 0, 0})
+
+	skybox = entity.NewSkybox()
+	renderQueue.Add(skybox)
+
 	rand.Seed(0x12345 + 8)
-	my_world.AddActor(&player)
+	my_world.AddActor(player)
 
-	testblock := actor.NewBlock(&my_world, glutil.Point3D{0, 15, 0}, glutil.Point3D{3, 3, 3}, glutil.Color4D{.5, .5, .5, 1}, true)
-	testblock.Texture = crateTex
-	testblock.TexScale = 3
-	my_world.AddActor(&testblock)
-	renderQueue.Add(&testblock)
-
-	tmpList := []actor.OrbitActor{}
-	for i := 0; i < 250; i++ {
-		speed := rand.Intn(3)
-		//radius := rand.Intn(50) + 125
-		radius := 100
-		x, y, z := float64(rand.Intn(10)-5), float64(rand.Intn(10)-5), float64(rand.Intn(150)-75)
-		angle := float64(rand.Intn(360))
-		//cylinder := NewCylinder(&my_world, glutil.Point3D{x, y + 30, z}, 1, 4)
-		cylinder := actor.NewBlock(&my_world, glutil.Point3D{x, y + 30, z}, glutil.Point3D{.1, .1, .1}, glutil.Color4D{.8, .8, .8, .05}, false)
-		tmpList = append(tmpList, actor.NewOrbitActor(&my_world, &cylinder, glutil.Point3D{x, y + 0, z}, float64(radius)))
-		tmpList[i].SetSpeed(int32(speed))
-		tmpList[i].SetAngle(int32(angle))
-		tmpList[i].SetAxis(glutil.Point3D{0, 0, 1})
-		renderQueue.Add(&cylinder)
-		my_world.AddActor(&tmpList[i])
-	}
-
-	// Create castle
-	//myCastle := NewCastle()
-	//renderQueue.AddNamed(&myCastle, "castle")
-
-	// Create ground
-	ground := entity.NewXYPlane(glutil.Point3D{100, 0, 100}, glutil.Point3D{-100, 0, -100}, 0)
-	ground.SetColor(glutil.Color4D{0.4313725490 * .7, 0.24705882 * .7, 0.098039215 * .7, 1})
-	ground.SetPolygonOffset(1.0)
-	renderQueue.Add(&ground)
-	my_world.AddEntity(&ground.Box)
-
-	stairs := actor.NewStairs(&my_world, glutil.Point3D{0, 0, 0})
-	renderQueue.Add(&stairs)
+	//stairs := actor.NewStairs(&my_world, glutil.Point3D{0, 0, 0})
+	//renderQueue.Add(&stairs)
 
 	trunkTex := glh.NewTexture(256, 256)
 	file, _ = os.Open("trunk.png")
@@ -256,25 +228,33 @@ func setup() {
 	treeTex.FromPngReader(file, 0)
 	file.Close()
 
-	scale := float64(200)
-	for i := 0; i < 100; i++ {
+	scale := float64(300)
+	for i := 0; i < 200; i++ {
 		x := (rand.Float64() * scale) - (scale / 2)
 		z := (rand.Float64() * scale) - (scale / 2)
 		x_scale, z_scale := (rand.Float64()/2)+.75, (rand.Float64()/2)+.75
 		y_scale := (rand.Float64() * 1) + .75
-		if (x < -5 || x > 20) && (z < -5 || z > 20) {
-			tree1 := entity.NewTree(glutil.Point3D{x, 0, z}, x_scale, y_scale, z_scale)
-			tree1.TrunkTex = trunkTex
-			tree1.TreeTex = treeTex
-			renderQueue.Add(&tree1)
-		}
+		//	if (x < -5 || x > 20) && (z < -5 || z > 20) {
+		tree1 := actor.NewTree(&my_world, glutil.Point3D{x, 0, z}, x_scale, y_scale, z_scale)
+		tree1.TrunkTex = trunkTex
+		tree1.TreeTex = treeTex
+		my_world.AddActor(&tree1)
+		//	}
+	}
+	for i := 0; i < 50; i++ {
+		x := (rand.Float64() * scale) - (scale / 2)
+		y := (rand.Float64() * 10) + 15
+		z := (rand.Float64() * scale) - (scale / 2)
+		boxSpawn(x, y, z)
+
 	}
 
 	// Put camera somewhere
 	//currentCamera.Translate(5, -5, 28)
-	player.Translate(10, 0, -20)
+	//player.Translate(10, 0, -20)
+	player.Model.SetPosition(ode.V3(10, 5, -20))
 	player.ImmediateJump() // Skip interpolation
-	player.Rotate(-120, 0)
+	//player.Rotate(-120, 0)
 	player.ImmediateLook() // Skip interpolation
 	my_world.Start()
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type Cylinder struct {
-	BasicActor
+	*BasicActor
 	radius float64
 	height float64
 }
@@ -17,7 +17,8 @@ func NewCylinder(my_world *world.World, position glutil.Point3D, radius, height 
 	center := glutil.Point3D{position.X, position.Y + (height / 2), position.Z}
 	box := my_world.Space.NewBox(ode.V3(2*radius, 2*radius, height))
 	box.SetPosition(center.ToODE())
-	return Cylinder{NewBasicActor(my_world, &box), radius, height}
+	actor := NewBasicActor(my_world, &box)
+	return Cylinder{&actor, radius, height}
 }
 
 func (self *Cylinder) Render() {

@@ -21,13 +21,13 @@ dependencies: bin pkg
 	go get github.com/ianremmler/ode
 
 gobuild: 
-	go build -o hw7 main
+	go build -o project main
 
 run:
-	@./hw7
+	@./project
 
 clean:
-	@rm -f ./hw7
+	@rm -f ./project
 	@rm -rf pkg/
 	@rm -rf src/gopkg.in
 	@rm -rf src/github.com

@@ -8,7 +8,7 @@ import (
 )
 
 type OrbitActor struct {
-	BasicActor
+	*BasicActor
 	child  world.Actor
 	center glutil.Point3D
 	radius float64
@@ -21,7 +21,11 @@ type OrbitActor struct {
 func NewOrbitActor(myworld *world.World, child world.Actor, center glutil.Point3D, radius float64) OrbitActor {
 	box := myworld.Space.NewBox(ode.V3(0, 0, 0))
 	basic := NewBasicActor(myworld, &box)
-	return OrbitActor{basic, child, center, radius, 0, 1, true, glutil.Point3D{0, 1, 0}}
+	return OrbitActor{&basic, child, center, radius, 0, 1, true, glutil.Point3D{0, 1, 0}}
+}
+
+func (self *OrbitActor) Render() {
+	self.child.Render()
 }
 
 func (self *OrbitActor) Tick() {
