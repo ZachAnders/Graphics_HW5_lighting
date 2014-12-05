@@ -1,4 +1,6 @@
 export GOPATH=$(PWD)
+export CGO_CFLAGS := -I$(PWD)/ode/bin/include $(CGO_CFLAGS)
+export CGO_LDFLAGS := -L$(PWD)/ode/bin/lib/ $(CGO_LDFLAGS)
 
 #	go get gopkg.in/qml.v1
 
@@ -32,8 +34,7 @@ ode:
 	@tar xzf ode-0.13.1.tar.gz
 	@rm ode-0.13.1.tar.gz
 	@mv ode-0.13.1/ ode/
-	cd ode/; ./configure --enable-double-precision --enable-shared; make;
-	cd ode/; sudo make install
+	cd ode/; ./configure --prefix=$(PWD)/ode/bin/ --enable-double-precision --enable-shared; make; make install
 
 clean:
 	@rm -f ./project

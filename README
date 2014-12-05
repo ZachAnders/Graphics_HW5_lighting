@@ -30,6 +30,7 @@ Build Instructions:
 
 	2. Now you should be able to build the application:
 			$ make
+            (This may take a few minutes the first time you run it!)
 
 	3. If it was successful, you should see "BUILD COMPLETE" at the end of your output
 	4. You should see a './project' binary in your current directory. You can
